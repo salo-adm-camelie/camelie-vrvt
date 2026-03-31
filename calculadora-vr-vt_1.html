@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VR + VT — Camelie Dermatologia</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh; background: #FAF7F4; display: flex; align-items: flex-start;
+    justify-content: center; padding: 20px; font-family: 'DM Sans', sans-serif;
+  }
+  .wrap { width: 100%; max-width: 480px; margin-top: 20px; padding-bottom: 40px; }
+  .header { text-align: center; margin-bottom: 28px; position: relative; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500; color: #2C2421; }
+  .header .line { width: 32px; height: 2px; background: #C4A265; margin: 8px auto 4px; border-radius: 1px; }
+  .header p { font-size: 12px; color: #8A7D76; }
+  .gear-btn {
+    position: absolute; right: 0; top: 2px; width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid #EDE7E1; background: #fff; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .gear-btn:hover { background: #F5F0EB; }
+  .gear-btn.active { background: #2C2421; border-color: #2C2421; }
+  .gear-btn.active svg { fill: #C4A265; }
+  .card {
+    background: #fff; border-radius: 18px; padding: 24px 20px;
+    box-shadow: 0 2px 16px rgba(44,36,33,0.05); border: 1px solid #EDE7E1;
+  }
+  .label { font-size: 11px; font-weight: 600; color: #8A7D76; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .dias-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .dias-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid #EDE7E1;
+    background: #FAF7F4; font-size: 18px; cursor: pointer; color: #2C2421;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .dias-btn:active { background: #EDE7E1; }
+  .dias-input {
+    width: 60px; text-align: center; font-size: 28px; font-family: 'DM Mono', monospace;
+    font-weight: 500; border: none; background: transparent; color: #2C2421; outline: none;
+  }
+  .mes-row { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .mes-select {
+    flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #EDE7E1;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: #2C2421;
+    background: #FAF7F4; outline: none; cursor: pointer;
+  }
+  .mes-select:focus { border-color: #C4A265; }
+  .divider { height: 1px; background: #EDE7E1; margin: 0 -20px 20px; }
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #EDE7E1;
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row-name { font-size: 14px; font-weight: 600; color: #2C2421; }
+  .row-detail { font-size: 11px; color: #8A7D76; margin-top: 2px; font-family: 'DM Mono', monospace; }
+  .row-total { font-size: 18px; font-family: 'Playfair Display', serif; font-weight: 600; color: #C4A265; text-align: right; }
+  .row-breakdown { font-size: 10px; color: #8A7D76; font-family: 'DM Mono', monospace; text-align: right; }
+  .total-box {
+    margin-top: 20px; padding: 18px 16px; border-radius: 14px; text-align: center;
+    background: linear-gradient(135deg, #FFFDF9, #FFF6E8); border: 1px solid #E8D5B0;
+  }
+  .total-label { font-size: 11px; font-weight: 600; color: #8A7D76; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .total-value { font-size: 32px; font-family: 'Playfair Display', serif; font-weight: 600; color: #C4A265; }
+  .total-breakdown { font-size: 11px; color: #8A7D76; font-family: 'DM Mono', monospace; margin-top: 6px; }
+
+  /* CONFIG PANEL */
+  .config-panel {
+    display: none; margin-bottom: 16px; background: #fff; border-radius: 18px; padding: 24px 20px;
+    box-shadow: 0 2px 16px rgba(44,36,33,0.05); border: 1px solid #EDE7E1;
+  }
+  .config-panel.open { display: block; }
+  .config-title {
+    font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
+    color: #2C2421; margin-bottom: 16px;
+  }
+  .config-item { padding: 14px 0; border-bottom: 1px solid #EDE7E1; }
+  .config-item:last-of-type { border-bottom: none; }
+  .config-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .config-item-name { font-size: 14px; font-weight: 600; color: #2C2421; }
+  .config-remove {
+    width: 28px; height: 28px; border-radius: 8px; border: 1px solid #EDE7E1;
+    background: #fff; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; color: #C45B5B; transition: all 0.2s;
+  }
+  .config-remove:hover { background: #FCF0F0; border-color: #C45B5B; }
+  .config-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .config-field label {
+    display: block; font-size: 10px; font-weight: 600; color: #8A7D76;
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
+  }
+  .config-field input {
+    width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #EDE7E1;
+    font-family: 'DM Mono', monospace; font-size: 13px; color: #2C2421;
+    background: #FAF7F4; outline: none;
+  }
+  .config-field input:focus { border-color: #C4A265; }
+  .config-field.full { grid-column: 1 / -1; }
+  .config-toggle-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .toggle {
+    position: relative; width: 40px; height: 22px; border-radius: 11px;
+    background: #EDE7E1; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle.on { background: #C4A265; }
+  .toggle .knob {
+    position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+    border-radius: 50%; background: #fff; transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle.on .knob { left: 20px; }
+  .toggle-label { font-size: 12px; color: #8A7D76; }
+  .add-btn {
+    width: 100%; padding: 12px; border-radius: 12px; border: 2px dashed #EDE7E1;
+    background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; color: #8A7D76; margin-top: 14px; transition: all 0.2s;
+  }
+  .add-btn:hover { border-color: #C4A265; color: #C4A265; background: #FFFDF9; }
+
+  /* EMAIL TEXTS */
+  .emails-section { margin-top: 20px; }
+  .emails-title {
+    font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500;
+    color: #2C2421; margin-bottom: 16px; text-align: center;
+  }
+  .email-card {
+    background: #fff; border-radius: 14px; padding: 18px 16px; margin-bottom: 12px;
+    border: 1px solid #EDE7E1; box-shadow: 0 1px 8px rgba(44,36,33,0.03);
+    position: relative;
+  }
+  .email-card-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+  }
+  .email-card-name { font-size: 13px; font-weight: 600; color: #C4A265; text-transform: uppercase; letter-spacing: 0.04em; }
+  .copy-btn {
+    padding: 6px 14px; border-radius: 8px; border: 1px solid #EDE7E1;
+    background: #FAF7F4; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 600; color: #8A7D76; transition: all 0.2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .copy-btn:hover { background: #2C2421; color: #fff; border-color: #2C2421; }
+  .copy-btn.copied { background: #4A7C59; color: #fff; border-color: #4A7C59; }
+  .email-text {
+    font-size: 13px; color: #2C2421; line-height: 1.7; white-space: pre-wrap;
+    font-family: 'DM Sans', sans-serif; padding: 12px 14px; background: #FAFAFA;
+    border-radius: 8px; border: 1px solid #F0EBE5;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <h1>VR + VT</h1>
+    <div class="line"></div>
+    <p>Camelie Dermatologia</p>
+    <button class="gear-btn" id="gearBtn" onclick="toggleConfig()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#8A7D76"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"/></svg>
+    </button>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div class="config-panel" id="configPanel">
+    <div class="config-title">Configuração</div>
+    <div id="configItems"></div>
+    <button class="add-btn" onclick="addFunc()">+ Adicionar Funcionária</button>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="card">
+    <div class="label">Mês de Referência</div>
+    <div class="mes-row">
+      <select class="mes-select" id="mesRef" onchange="calc()"></select>
+    </div>
+
+    <div class="label">Dias Úteis no Mês</div>
+    <div class="dias-row">
+      <button class="dias-btn" onclick="changeDias(-1)">−</button>
+      <input class="dias-input" type="number" id="dias" value="22" min="1" max="31" oninput="calc()">
+      <button class="dias-btn" onclick="changeDias(1)">+</button>
+    </div>
+    <div class="divider"></div>
+    <div id="rows"></div>
+    <div class="total-box">
+      <div class="total-label">Total Geral</div>
+      <div class="total-value" id="totalGeral"></div>
+      <div class="total-breakdown" id="totalBreak"></div>
+    </div>
+  </div>
+
+  <!-- EMAIL TEXTS -->
+  <div class="emails-section">
+    <div class="emails-title">Textos para E-mail</div>
+    <div id="emailCards"></div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_FUNCS = [
+  { nome: "Rosa",     vrDia: 18.76, vt: 500, fixo: false, vrFixo: 0 },
+  { nome: "Lili",     vrDia: 22.64, vt: 500, fixo: false, vrFixo: 0 },
+  { nome: "Fernanda", vrDia: 18.76, vt: 500, fixo: false, vrFixo: 0 },
+  { nome: "Vitória",  vrDia: 0,     vt: 500, fixo: true,  vrFixo: 300 },
+  { nome: "Laís",     vrDia: 27.00, vt: 500, fixo: false, vrFixo: 0 },
+];
+
+let funcs = JSON.parse(JSON.stringify(DEFAULT_FUNCS));
+
+function save() {
+  try { localStorage.setItem("camelie_vrvt", JSON.stringify(funcs)); } catch(e) {}
+}
+function load() {
+  try {
+    const d = localStorage.getItem("camelie_vrvt");
+    if (d) funcs = JSON.parse(d);
+  } catch(e) {}
+}
+
+function fmt(v) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+function fmtPlain(v) {
+  return v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Populate month selector
+function initMeses() {
+  const sel = document.getElementById("mesRef");
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const now = new Date();
+  // Show next month as default (benefits are usually for next month)
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  for (let i = -2; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const opt = document.createElement("option");
+    opt.value = `${meses[d.getMonth()]} de ${d.getFullYear()}`;
+    opt.textContent = `${meses[d.getMonth()]} de ${d.getFullYear()}`;
+    if (d.getMonth() === nextMonth.getMonth() && d.getFullYear() === nextMonth.getFullYear()) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function changeDias(d) {
+  const el = document.getElementById("dias");
+  const v = Math.min(31, Math.max(1, parseInt(el.value || 22) + d));
+  el.value = v;
+  calc();
+}
+
+function toggleConfig() {
+  const panel = document.getElementById("configPanel");
+  const btn = document.getElementById("gearBtn");
+  const open = panel.classList.toggle("open");
+  btn.classList.toggle("active", open);
+  if (open) renderConfig();
+}
+
+function renderConfig() {
+  const container = document.getElementById("configItems");
+  let html = "";
+  funcs.forEach((f, i) => {
+    const displayName = f.nome || "Nova";
+    html += `<div class="config-item">
+      <div class="config-item-header">
+        <span class="config-item-name">${displayName}</span>
+        ${funcs.length > 1 ? `<button class="config-remove" onclick="removeFunc(${i})" title="Remover">✕</button>` : ""}
+      </div>
+      <div class="config-fields">
+        <div class="config-field full">
+          <label>Nome</label>
+          <input type="text" value="${f.nome}" oninput="updateField(${i},'nome',this.value)">
+        </div>
+        <div class="config-field full">
+          <div class="config-toggle-row">
+            <div class="toggle ${f.fixo ? "on" : ""}" onclick="toggleFixo(${i})"><div class="knob"></div></div>
+            <span class="toggle-label">VT fixo (não varia por dia útil)</span>
+          </div>
+        </div>
+        ${f.fixo ? `
+          <div class="config-field">
+            <label>VT Fixo (R$)</label>
+            <input type="number" step="0.01" value="${f.vrFixo}" oninput="updateField(${i},'vrFixo',parseFloat(this.value)||0)">
+          </div>
+        ` : `
+          <div class="config-field">
+            <label>VT por Dia (R$)</label>
+            <input type="number" step="0.01" value="${f.vrDia}" oninput="updateField(${i},'vrDia',parseFloat(this.value)||0)">
+          </div>
+        `}
+        <div class="config-field">
+          <label>VR Fixo (R$)</label>
+          <input type="number" step="0.01" value="${f.vt}" oninput="updateField(${i},'vt',parseFloat(this.value)||0)">
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function updateField(i, field, val) {
+  funcs[i][field] = val;
+  save(); calc();
+  if (field === "nome") {
+    const headers = document.querySelectorAll(".config-item-name");
+    if (headers[i]) headers[i].textContent = val || "Nova";
+  }
+}
+
+function toggleFixo(i) {
+  funcs[i].fixo = !funcs[i].fixo;
+  if (funcs[i].fixo && funcs[i].vrFixo === 0) funcs[i].vrFixo = 300;
+  save(); calc(); renderConfig();
+}
+
+function addFunc() {
+  funcs.push({ nome: "", vrDia: 18.76, vt: 500, fixo: false, vrFixo: 0 });
+  save(); calc(); renderConfig();
+}
+
+function removeFunc(i) {
+  if (funcs.length <= 1) return;
+  funcs.splice(i, 1);
+  save(); calc(); renderConfig();
+}
+
+function buildEmailText(f, dias, mesRef) {
+  const nome = f.nome || "—";
+  const vr = f.fixo ? (f.vrFixo || 0) : (f.vrDia || 0) * dias;
+  const vt = f.vt || 0;
+  const total = vr + vt;
+
+  let vtBlock;
+  if (f.fixo) {
+    vtBlock = `Vale-Transporte (VT)\nValor fixo mensal: R$ ${fmtPlain(f.vrFixo || 0)}`;
+  } else {
+    vtBlock = `Vale-Transporte (VT)\nValor diário: R$ ${fmtPlain(f.vrDia || 0)}\nDias úteis no mês: ${dias}\nTotal VT: R$ ${fmtPlain(f.vrDia || 0)} × ${dias} = R$ ${fmtPlain(vr)}`;
+  }
+
+  const vrBlock = `Vale-Refeição (VR)\nValor fixo mensal: R$ ${fmtPlain(vt)}`;
+
+  return `Boa tarde, ${nome} e Rose,
+
+Segue anexo o comprovante de transferência referente aos benefícios de VT e VR do mês de ${mesRef}.
+
+
+Cálculo:
+
+${vtBlock}
+
+${vrBlock}
+
+
+Valor total da transferência: R$ ${fmtPlain(total)}
+
+
+Qualquer dúvida, estou à disposição.`;
+}
+
+function copyEmail(i) {
+  const dias = Math.max(1, Math.min(31, parseInt(document.getElementById("dias").value) || 22));
+  const mesRef = document.getElementById("mesRef").value;
+  const text = buildEmailText(funcs[i], dias, mesRef);
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copyBtn" + i);
+    btn.classList.add("copied");
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Copiado`;
+    setTimeout(() => {
+      btn.classList.remove("copied");
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar`;
+    }, 2000);
+  });
+}
+
+function calc() {
+  const dias = Math.max(1, Math.min(31, parseInt(document.getElementById("dias").value) || 22));
+  const mesRef = document.getElementById("mesRef").value;
+  let rowsHtml = "", emailsHtml = "", sumVR = 0, sumVT = 0;
+
+  funcs.forEach((f, idx) => {
+    const vr = f.fixo ? (f.vrFixo || 0) : (f.vrDia || 0) * dias;
+    const vt = f.vt || 0;
+    const total = vr + vt;
+    sumVR += vr; sumVT += vt;
+
+    const detail = f.fixo
+      ? `R$ ${fmtPlain(f.vrFixo||0)} fixo + R$ ${vt.toFixed(0)} VR`
+      : `${fmtPlain(f.vrDia||0)} × ${dias}d + R$ ${vt.toFixed(0)} VR`;
+
+    rowsHtml += `<div class="row">
+      <div><div class="row-name">${f.nome || "—"}</div><div class="row-detail">${detail}</div></div>
+      <div><div class="row-total">${fmt(total)}</div><div class="row-breakdown">VT ${fmt(vr)} · VR ${fmt(vt)}</div></div>
+    </div>`;
+
+    const emailText = buildEmailText(f, dias, mesRef);
+    emailsHtml += `<div class="email-card">
+      <div class="email-card-header">
+        <span class="email-card-name">${f.nome || "—"}</span>
+        <button class="copy-btn" id="copyBtn${idx}" onclick="copyEmail(${idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar
+        </button>
+      </div>
+      <div class="email-text">${emailText}</div>
+    </div>`;
+  });
+
+  document.getElementById("rows").innerHTML = rowsHtml;
+  document.getElementById("totalGeral").textContent = fmt(sumVR + sumVT);
+  document.getElementById("totalBreak").textContent = `VT ${fmt(sumVR)} · VR ${fmt(sumVT)}`;
+  document.getElementById("emailCards").innerHTML = emailsHtml;
+}
+
+load();
+initMeses();
+calc();
+</script>
+</body>
+</html>
