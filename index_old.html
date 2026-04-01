@@ -155,45 +155,11 @@
     font-family: 'DM Sans', sans-serif; padding: 12px 14px; background: #FAFAFA;
     border-radius: 8px; border: 1px solid #F0EBE5;
   }
-  /* LOCK SCREEN */
-  .lock-screen {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: #FAF7F4; display: flex; align-items: center;
-    justify-content: center; z-index: 9999;
-  }
-  .lock-box { text-align: center; width: 280px; }
-  .lock-box h1 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 500; color: #2C2421; margin-bottom: 4px; }
-  .lock-box .line { width: 32px; height: 2px; background: #C4A265; margin: 8px auto 4px; border-radius: 1px; }
-  .lock-box p { font-size: 12px; color: #8A7D76; margin-bottom: 28px; }
-  .lock-input {
-    width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #EDE7E1;
-    font-family: 'DM Mono', monospace; font-size: 20px; color: #2C2421;
-    background: #fff; outline: none; text-align: center; letter-spacing: 0.3em;
-  }
-  .lock-input:focus { border-color: #C4A265; }
-  .lock-input.error { border-color: #C45B5B; animation: shake 0.3s; }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-  }
-  .lock-hint { font-size: 11px; color: #C45B5B; margin-top: 10px; height: 16px; }
-  .wrap.hidden { display: none; }
 </style>
 </head>
 <body>
 
-<div class="lock-screen" id="lockScreen">
-  <div class="lock-box">
-    <h1>VR + VT</h1>
-    <div class="line"></div>
-    <p>Camelie Dermatologia</p>
-    <input class="lock-input" id="lockInput" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
-    <div class="lock-hint" id="lockHint"></div>
-  </div>
-</div>
-
-<div class="wrap hidden" id="mainWrap">
+<div class="wrap">
   <div class="header">
     <h1>VR + VT</h1>
     <div class="line"></div>
@@ -241,38 +207,6 @@
 </div>
 
 <script>
-// === PASSWORD PROTECTION ===
-const PASS = "0216";
-const AUTH_KEY = "camelie_vrvt_auth";
-
-function checkAuth() {
-  try { return localStorage.getItem(AUTH_KEY) === "1"; } catch(e) { return false; }
-}
-
-function unlock() {
-  try { localStorage.setItem(AUTH_KEY, "1"); } catch(e) {}
-  document.getElementById("lockScreen").style.display = "none";
-  document.getElementById("mainWrap").classList.remove("hidden");
-}
-
-if (checkAuth()) {
-  unlock();
-} else {
-  document.getElementById("lockInput").addEventListener("input", function() {
-    const val = this.value;
-    if (val.length === 4) {
-      if (val === PASS) {
-        unlock();
-      } else {
-        this.classList.add("error");
-        document.getElementById("lockHint").textContent = "Senha incorreta";
-        this.value = "";
-        setTimeout(() => { this.classList.remove("error"); document.getElementById("lockHint").textContent = ""; }, 1000);
-      }
-    }
-  });
-  document.getElementById("lockInput").focus();
-}
 const DEFAULT_FUNCS = [
   { nome: "Rosa",     vrDia: 18.76, vt: 500, fixo: false, vrFixo: 0, email: "rosaalmeida2018@yahoo.com" },
   { nome: "Lili",     vrDia: 22.64, vt: 500, fixo: false, vrFixo: 0, email: "jesusroseli93@gmail.com" },
