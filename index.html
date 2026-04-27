@@ -549,6 +549,14 @@ document.addEventListener("input", function(e) {
   const val = el.dataset.type === "number" ? (parseFloat(el.value) || 0) : el.value;
   updateField(idx, field, val);
 });
+
+// Tell parent (Squarespace iframe) our real height so it can resize
+function postHeight() {
+  const h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+  try { parent.postMessage({ type: "camelie-vrvt-height", height: h }, "*"); } catch(e) {}
+}
+window.addEventListener("load", postHeight);
+if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
 </script>
 </body>
 </html>
